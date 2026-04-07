@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Reports</h1>
+
+<!-- SEARCH -->
+<div class="search-wrapper">
+<input type="text" id="caseSearch" placeholder="Search case ID or remark...">
+</div>
+
+<!-- CASE TABLE -->
+<div class="table-container scroll-box">
+
+<table id="caseTable">
+
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Remark</th>
+<th style="text-align:center;">Select</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for case in cases %}
+
+<tr>
+
+<td>{{case.name}}</td>
+
+<td style="max-width:420px; word-break:break-word;">
+{{case.remark}}
+</td>
+
+<td style="text-align:center;">
+
+<form method="POST">
+
+<input type="hidden" name="case" value="{{case.name}}">
+
+<button class="create-btn">
+Select
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- REPORT OUTPUT -->
+{% if selected_case %}
+
+<div class="card report-card">
+
+    <div class="report-top">
+        <div>
+            <h2>Investigation Reports</h2>
+            <p class="report-desc">
+                Generate and download reports for this case.
+            </p>
+        </div>
+
+        <div class="report-case">
+            {{selected_case}}
+        </div>
+    </div>
+
+    <div class="report-actions">
+
+        <a href="/download_csv" class="report-btn primary">
+            ⬇ Download CSV
+        </a>
+
+        <a href="/download_pdf" class="report-btn secondary">
+            ⬇ Download PDF
+        </a>
+
+    </div>
+
+</div>
+
+{% else %}
+
+<div class="card" style="margin-top:20px; text-align:center;">
+<h3>No Case Selected</h3>
+<p>Select a case above to generate reports.</p>
+</div>
+
+{% endif %}
+
+<!-- SCRIPT (UNCHANGED LOGIC) -->
+<script>
+
+let searchInput = document.getElementById("caseSearch");
+
+searchInput.addEventListener("keyup",function(){
+
+let filter = searchInput.value.toLowerCase();
+let rows = document.querySelectorAll("#caseTable tbody tr");
+
+rows.forEach((row)=>{
+
+let text = row.innerText.toLowerCase();
+
+row.style.display = text.includes(filter) ? "" : "none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

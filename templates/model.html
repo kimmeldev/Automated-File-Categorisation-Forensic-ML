@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Model Intelligence</h1>
+
+<!-- HERO -->
+<div class="card model-hero">
+
+    <div class="hero-left">
+        <h2>Random Forest Classifier</h2>
+        <p>
+        Core machine learning engine used to classify and analyse forensic evidence automatically.
+        </p>
+
+        <div class="hero-tags">
+            <span>Scikit-learn</span>
+            <span>Supervised Learning</span>
+            <span>High Accuracy</span>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <div class="hero-stat">
+            <span>Model File</span>
+            <strong>file_classifier.pkl</strong>
+        </div>
+    </div>
+
+</div>
+
+<!-- GRID -->
+<div class="model-grid">
+
+<div class="model-card cat">
+<h3>📁 Evidence Categories</h3>
+<ul>
+<li>Images</li>
+<li>Documents</li>
+<li>Videos</li>
+<li>Executables</li>
+</ul>
+</div>
+
+<div class="model-card feature">
+<h3>⚙ Features Used</h3>
+<ul>
+<li>File Size</li>
+<li>File Extension</li>
+<li>MIME Type</li>
+<li>File Signature</li>
+</ul>
+</div>
+
+<div class="model-card meta">
+<h3>🧬 Metadata Extracted</h3>
+<ul>
+<li>SHA256 Hash</li>
+<li>Entropy</li>
+<li>Timestamps</li>
+</ul>
+</div>
+
+<div class="model-card danger">
+
+    <h3>🚨 Suspicious Detection</h3>
+
+    <ul>
+        <li>Extension mismatch</li>
+        <li>High entropy</li>
+        <li>Low confidence</li>
+    </ul>
+
+</div>
+
+</div>
+
+{% endblock %}

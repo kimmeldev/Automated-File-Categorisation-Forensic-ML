@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Evidence Explorer</h1>
+
+<div class="search-wrapper">
+    <input type="text" id="caseSearch" placeholder="Search case ID or remark...">
+</div>
+
+<!-- CASE TABLE (UNCHANGED) -->
+<div class="table-container scroll-box">
+<table id="caseTable">
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Remark</th>
+<th style="text-align:center;">Select</th>
+</tr>
+</thead>
+<tbody>
+{% for case in cases %}
+<tr>
+<td>{{ case.name }}</td>
+<td style="max-width:420px; word-break:break-word;">
+{{ case.remark }}
+</td>
+<td style="text-align:center;">
+
+<div class="action-group">
+
+<form method="POST" action="/evidence">
+<input type="hidden" name="case" value="{{ case.name }}">
+<button type="submit" class="create-btn">Select</button>
+</form>
+
+<button class="create-btn2"
+onclick="openAddEvidence('{{ case.name }}','{{ case.remark|escape }}')">
++ Add
+</button>
+
+</div>
+
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if selected_case %}
+
+<h2 style="margin-top:30px;">Evidence in {{ selected_case }}</h2>
+
+<!-- 🔥 FIXED SCROLL + CLEAN STRUCTURE -->
+<div class="table-container">
+    <div class="scroll-box evidence-scroll">
+
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Type</th>
+<th>Confidence</th>
+<th>Entropy</th>        <!-- 🔥 ADD -->
+<th>Status</th>
+<th>Indicators</th>     <!-- 🔥 ADD -->
+<th>Risk</th>
+<th style="text-align:center;">Actions</th>
+</tr>
+</thead>
+
+<tbody>
+{% for row in results %}
+
+<tr
+{% set risk = row.risk_score|int %}
+{% if risk >= 70 %}
+    style="background-color:#fee2e2;"
+{% elif risk >= 30 %}
+    style="background-color:#fef3c7;"
+{% else %}
+    style="background-color:#ecfdf5;"
+{% endif %}
+>
+<td style="max-width:350px; word-break:break-word;">{{ row.filename }}</td>
+<td>{{ row.prediction }}</td>
+<td>{{ row.confidence }}%</td>
+<td>{{ row.entropy }}</td>
+
+<td>
+{% if row.status == "SUSPICIOUS" %}
+<span class="status-bad">⚠ SUSPICIOUS</span>
+{% else %}
+<span class="status-good">✔ NORMAL</span>
+{% endif %}
+</td>
+
+<td>
+{% if row.indicators %}
+    <span class="badge badge-medium">
+        {{ row.indicators }}
+    </span>
+{% else %}
+    -
+{% endif %}
+</td>
+
+<td>
+{% if risk >= 70 %}
+<span class="badge badge-high">HIGH</span>
+{% elif risk >= 30 %}
+<span class="badge badge-medium">MEDIUM</span>
+{% else %}
+<span class="badge badge-low">LOW</span>
+{% endif %}
+</td>
+
+<td>
+<div class="action-group evidence-actions">
+
+{% if row.prediction == "executables" %}
+
+<span class="badge badge-high">Executable</span>
+
+<form method="POST" action="/request_delete" class="delete-form">
+<input type="hidden" name="case" value="{{ selected_case }}">
+<input type="hidden" name="filename" value="{{ row.filename }}">
+<input type="text" name="reason" placeholder="Reason" required>
+<button type="submit" class="create-btn2">Delete</button>
+</form>
+
+{% else %}
+
+<a class="create-btn"
+href="/preview/{{ selected_case }}/{{ row.filename }}"
+target="_blank"
+onclick="return handlePreview('{{ row.filename }}')">
+Preview
+</a>
+
+<form method="POST" action="/request_delete" class="delete-form">
+<input type="hidden" name="case" value="{{ selected_case }}">
+<input type="hidden" name="filename" value="{{ row.filename }}">
+<input type="text" name="reason" placeholder="Reason" required>
+<button type="submit" class="create-btn2">Delete</button>
+</form>
+
+{% endif %}
+
+</div>
+</td>
+
+</tr>
+
+{% endfor %}
+</tbody>
+</table>
+
+    </div>
+</div>
+
+{% else %}
+
+<div class="card" style="margin-top:30px;text-align:center;">
+<h3>No Case Selected</h3>
+<p>Select a case above to view evidence.</p>
+</div>
+
+{% endif %}
+
+<script>
+
+const searchInput = document.getElementById("caseSearch")
+const caseTable = document.getElementById("caseTable")
+
+if(searchInput && caseTable){
+    const rows = caseTable.getElementsByTagName("tr")
+
+    searchInput.addEventListener("keyup", function(){
+        const filter = searchInput.value.toLowerCase()
+
+        for (let i = 1; i < rows.length; i++) {
+            const caseId = rows[i].cells[0].innerText.toLowerCase()
+            const remark = rows[i].cells[1].innerText.toLowerCase()
+
+            rows[i].style.display =
+                caseId.includes(filter) || remark.includes(filter)
+                ? "" : "none"
+        }
+    })
+}
+
+function handlePreview(filename){
+    const lower = filename.toLowerCase()
+
+    if(
+        lower.endsWith(".doc") ||
+        lower.endsWith(".docx") ||
+        lower.endsWith(".xls") ||
+        lower.endsWith(".xlsx")
+    ){
+        return confirm("This file cannot be previewed. It will be downloaded. Continue?")
+    }
+
+    return true
+}
+
+</script>
+
+{% endblock %}

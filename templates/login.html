@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="login-card">
+
+    <div class="login-inner">
+
+    <h1>Welcome Back</h1>
+    <p class="login-sub">Access your forensic intelligence dashboard</p>
+
+    <form method="POST">
+
+        <div class="form-group">
+            <input type="email" name="email" placeholder="Email address" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" name="password" placeholder="Password" required>
+        </div>
+
+        <button class="login-btn">
+            Sign In
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Timeline</h1>
+
+<!-- SEARCH -->
+<div class="search-wrapper">
+<input type="text" id="caseSearch" placeholder="Search case ID or remark...">
+</div>
+
+<!-- CASE TABLE (UNCHANGED + FIXED) -->
+<div class="table-container scroll-box">
+
+<table id="caseTable">
+
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Remark</th>
+<th style="text-align:center;">Select</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for case in cases %}
+
+<tr>
+
+<td>{{case.name}}</td>
+
+<td style="max-width:420px; word-break:break-word;">
+{{case.remark}}
+</td>
+
+<td style="text-align:center;">
+
+<form method="POST">
+
+<input type="hidden" name="case" value="{{case.name}}">
+
+<button class="create-btn">
+Select
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- TIMELINE -->
+{% if case_id %}
+
+<h2>Timeline for {{case_id}}</h2>
+
+<!-- ✅ FIXED SCROLL STRUCTURE -->
+<div class="table-container">
+    <div class="scroll-box timeline-scroll">
+
+        <table>
+
+        <thead>
+        <tr>
+        <th>File</th>
+        <th>Created</th>
+        <th>Modified</th>
+        <th>Accessed</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        {% for e in events %}
+
+        <tr>
+
+        <td style="max-width:300px; word-break:break-word;">
+        {{e.file}}
+        </td>
+
+        <td>{{e.created}}</td>
+        <td>{{e.modified}}</td>
+        <td>{{e.accessed}}</td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+{% else %}
+
+<div class="card" style="margin-top:20px; text-align:center;">
+<h3>No Case Selected</h3>
+<p>Select a case above to view timeline data.</p>
+</div>
+
+{% endif %}
+
+<!-- SCRIPT (UNCHANGED LOGIC) -->
+<script>
+
+let searchInput = document.getElementById("caseSearch");
+
+searchInput.addEventListener("keyup",function(){
+
+let filter = searchInput.value.toLowerCase();
+let rows = document.querySelectorAll("#caseTable tbody tr");
+
+rows.forEach((row)=>{
+
+let text = row.innerText.toLowerCase();
+
+row.style.display = text.includes(filter) ? "" : "none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

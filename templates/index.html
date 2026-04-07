@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- INTRODUCTION PANEL -->
+
+<div class="card intro-hero">
+
+    <h1>Automated File Categorisation</h1>
+
+    <p class="hero-desc">
+    A machine learning powered forensic system that categorises evidence,
+    detects suspicious files, and helps investigators identify high-risk data efficiently.
+    </p>
+    <p style="color:#334155; font-size:14px; margin-top:6px;">
+    This system automatically identifies high-risk evidence, reducing manual investigation time.
+    </p>
+
+    <div class="hero-features">
+
+        <span>Machine Learning Classification</span>
+        <span>Automatic Evidence Sorting</span>
+        <span>Suspicious File Detection</span>
+        <span>Risk Scoring & Timeline</span>
+
+    </div>
+
+</div>
+
+<!-- DASHBOARD STATS -->
+
+<div class="stats">
+
+<div class="card stat-box">
+<h2>{{total_cases}}</h2>
+<p>Total Cases</p>
+</div>
+
+<div class="card stat-box">
+<h2>{{total_files}}</h2>
+<p>Total Evidence</p>
+</div>
+
+<div class="card stat-box">
+<h2>{{total_suspicious}}</h2>
+<p>Suspicious Files</p>
+</div>
+
+<div class="card stat-box">
+<h2>{{highest_risk}}</h2>
+<p>Highest Risk Score</p>
+</div>
+
+</div>
+
+<!-- CHART -->
+
+<div class="card">
+
+<h2>Top Risk Files</h2>
+<p style="color:#64748b; font-size:13px; margin-bottom:10px;">
+Top files ranked by risk score based on anomaly detection, entropy, and model confidence.
+</p>
+
+{% if top_risk_files %}
+
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Case</th>
+<th>Risk Score</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for f in top_risk_files %}
+<tr>
+<td>{{ f.file }}</td>
+<td>{{ f.case }}</td>
+<td>
+    {% if f.risk >= 70 %}
+        <span class="badge badge-high">HIGH ({{ f.risk }})</span>
+    {% elif f.risk >= 30 %}
+        <span class="badge badge-medium">MEDIUM ({{ f.risk }})</span>
+    {% else %}
+        <span class="badge badge-low">LOW ({{ f.risk }})</span>
+    {% endif %}
+</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+{% else %}
+<p>No data available</p>
+{% endif %}
+
+</div>
+
+<div class="card chart-panel">
+
+<h2>Evidence Distribution</h2>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+
+<!-- CHART SCRIPT -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx = document.getElementById("chart");
+
+new Chart(ctx,{
+
+type:"bar",
+
+data:{
+labels:["Images","Documents","Videos","Executables"],
+
+datasets:[{
+
+data:[
+Number("{{images}}"),
+Number("{{documents}}"),
+Number("{{videos}}"),
+Number("{{executables}}")
+],
+
+backgroundColor:[
+"#3b82f6",
+"#06b6d4",
+"#f59e0b",
+"#ef4444"
+]
+
+}]
+
+},
+
+options:{
+plugins:{
+legend:{display:false}
+},
+scales:{
+y:{
+beginAtZero:true
+}
+}
+}
+
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Cases</h1>
+
+<!-- SEARCH -->
+<div class="search-wrapper">
+    <input type="text" id="caseSearch" placeholder="Search case ID or remark...">
+</div>
+
+<!-- BUTTON -->
+<div style="margin-bottom:15px;">
+    <button class="create-btn" onclick="openCreateForm()">
+        + Create Case
+    </button>
+</div>
+
+<!-- CREATE CASE FORM -->
+<div id="createCaseBox" class="card" style="display:none;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Create New Case</h2>
+        <span style="cursor:pointer;" onclick="closeCreateForm()">✖</span>
+    </div>
+
+    <form action="/create_case" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+
+        <div class="form-group">
+            <textarea name="remark" placeholder="Case Remark" required></textarea>
+        </div>
+
+        <!-- FILE UPLOAD -->
+        <div class="field">
+
+            <label>Upload Evidence Files</label>
+
+            <div class="upload-box" id="drop-area-form">
+                <strong>Drag & Drop Files</strong>
+                <span class="upload-sub">or click anywhere to upload</span>
+                <input type="file" name="files" multiple id="fileElem-form" hidden>
+            </div>
+
+            <div id="file-count-form">No files selected</div>
+
+            <div class="file-preview-scroll">
+                <div id="filePreview-form"></div>
+            </div>
+
+            <button type="button" onclick="resetFilesForm()" class="create-btn2">
+                Reset Files
+            </button>
+
+        </div>
+
+        <button class="create-btn full-btn">
+            Create Case
+        </button>
+
+    </form>
+
+</div>
+
+<!-- TABLE -->
+<div class="table-container scroll-box">
+<table id="caseTable">
+
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Remark</th>
+<th style="text-align:center;">Review</th>
+</tr>
+</thead>
+
+<tbody>
+{% for case in cases %}
+<tr>
+<td>{{case.name}}</td>
+
+<td style="max-width:420px; word-break:break-word;">
+{{case.remark}}
+</td>
+
+<td style="text-align:center;">
+<button class="create-btn"
+onclick="showReview('{{case.name}}','{{case.remark}}','{{case.total}}','{{case.suspicious}}')">
+Select
+</button>
+</td>
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+</div>
+
+<!-- REVIEW -->
+<div id="caseReview" class="card case-review" style="display:none;">
+
+    <div class="review-header">
+        <h2>Case Overview</h2>
+        <span class="review-case-id" id="reviewCase"></span>
+    </div>
+
+    <div class="review-grid">
+
+        <div class="review-item">
+            <strong>Remark</strong>
+            <span id="reviewRemark"></span>
+        </div>
+
+        <div class="review-item">
+            <strong>Total Evidence</strong>
+            <span id="reviewEvidence"></span>
+        </div>
+
+        <div class="review-item">
+            <strong>Suspicious Files</strong>
+            <span id="reviewSuspicious"></span>
+        </div>
+
+    </div>
+
+    <form action="/evidence" method="POST">
+        <input type="hidden" name="case" id="reviewCaseInput">
+        <button class="review-btn">Open Investigation →</button>
+    </form>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+// ===== CREATE FORM CONTROL =====
+function openCreateForm(){
+    const box = document.getElementById("createCaseBox");
+    box.style.display = "block";
+}
+
+function closeCreateForm(){
+    const box = document.getElementById("createCaseBox");
+    box.style.display = "none";
+
+    // 🔥 RESET EVERYTHING
+    resetCreateForm();
+}
+
+function resetCreateForm(){
+
+    // clear text
+    const remark = document.querySelector("#createCaseBox textarea");
+    if(remark) remark.value = "";
+
+    // clear files
+    fileListForm = [];
+    updateInputForm();
+    renderFilesForm();
+    updateFileCountForm();
+}
+
+// ===== SEARCH =====
+let searchInput=document.getElementById("caseSearch");
+
+searchInput.addEventListener("keyup",function(){
+let filter=searchInput.value.toLowerCase();
+let rows=document.querySelectorAll("#caseTable tbody tr");
+
+rows.forEach((row)=>{
+let text=row.innerText.toLowerCase();
+row.style.display=text.includes(filter)?"":"none";
+});
+});
+
+// ===== REVIEW =====
+function showReview(caseName, remark, total, suspicious){
+
+document.getElementById("caseReview").style.display = "block";
+
+document.getElementById("reviewCase").innerText = caseName;
+document.getElementById("reviewRemark").innerText = remark;
+document.getElementById("reviewEvidence").innerText = total;
+document.getElementById("reviewSuspicious").innerText = suspicious;
+
+document.getElementById("reviewCaseInput").value = caseName;
+
+}
+
+// ===== FILE SYSTEM (FORM) =====
+const dropAreaForm = document.getElementById("drop-area-form");
+const fileInputForm = document.getElementById("fileElem-form");
+const previewForm = document.getElementById("filePreview-form");
+const fileCountForm = document.getElementById("file-count-form");
+
+let fileListForm = [];
+
+if(dropAreaForm && fileInputForm){
+
+    dropAreaForm.addEventListener("click", () => fileInputForm.click());
+
+    fileInputForm.addEventListener("change", handleFilesForm);
+
+    dropAreaForm.addEventListener("dragover", (e)=>{
+        e.preventDefault();
+    });
+
+    dropAreaForm.addEventListener("drop", (e)=>{
+        e.preventDefault();
+        handleFilesForm({target:{files:e.dataTransfer.files}});
+    });
+}
+
+function handleFilesForm(e){
+    const files = e.target.files;
+
+    for(let file of files){
+        fileListForm.push(file);
+    }
+
+    updateInputForm();
+    renderFilesForm();
+    updateFileCountForm();
+}
+
+function renderFilesForm(){
+    previewForm.innerHTML = "";
+
+    fileListForm.forEach((file,index)=>{
+        const div = document.createElement("div");
+
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+
+        div.innerHTML = `
+            <span>${file.name}</span>
+            <button type="button" onclick="removeFileForm(${index})">✖</button>
+        `;
+
+        previewForm.appendChild(div);
+    });
+}
+
+function removeFileForm(index){
+    fileListForm.splice(index,1);
+    updateInputForm();
+    renderFilesForm();
+    updateFileCountForm();
+}
+
+function resetFilesForm(){
+    fileListForm = [];
+    updateInputForm();
+    renderFilesForm();
+    updateFileCountForm();
+}
+
+function updateInputForm(){
+    const dt = new DataTransfer();
+    fileListForm.forEach(file => dt.items.add(file));
+    fileInputForm.files = dt.files;
+}
+
+function updateFileCountForm(){
+    fileCountForm.innerText =
+        fileListForm.length === 0
+        ? "No files selected"
+        : fileListForm.length + " file(s) selected";
+}
+
+</script>
+
+{% endblock %}

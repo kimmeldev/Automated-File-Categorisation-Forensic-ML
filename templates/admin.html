@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Admin Panel</h1>
+
+<!-- ================= USERS ================= -->
+<div class="card">
+
+    <div class="review-header">
+        <h2>Manage Users</h2>
+    </div>
+
+    <div class="review-grid">
+
+    <!-- CREATE USER -->
+    <form method="POST" action="/create_user" class="review-item admin-form">
+        <strong>Create New User</strong>
+
+        <div class="form-group">
+            <input type="email" name="email" placeholder="Enter user email" required>
+            <input type="password" name="password" placeholder="Enter password" required>
+        </div>
+
+        <button class="btn-primary full-btn">
+            + Create User
+        </button>
+    </form>
+
+    <!-- DELETE USER -->
+    <form method="POST" action="/delete_user" class="review-item admin-form danger">
+        <strong>Delete User</strong>
+
+        <div class="form-group">
+            <input type="email" name="email" placeholder="Enter user email" required>
+        </div>
+
+        <button class="btn-danger full-btn">
+            Delete User
+        </button>
+    </form>
+
+</div>
+
+<!-- ================= DELETE REQUESTS ================= -->
+<h2>Delete Requests</h2>
+
+<div class="table-container scroll-box">
+
+<table>
+
+<thead>
+<tr>
+<th>Case</th>
+<th>File</th>
+<th>Reason</th>
+<th>Requested By</th>
+<th style="text-align:center;">Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for req in delete_requests %}
+
+<tr>
+
+<td>
+    <span class="badge badge-medium">
+        {{ req.case }}
+    </span>
+</td>
+
+<td style="max-width:260px; word-break:break-word;">
+    {{ req.file }}
+</td>
+
+<td style="max-width:300px; word-break:break-word;">
+    {{ req.reason }}
+</td>
+
+<td>
+    <span class="badge badge-low">
+        {{ req.user }}
+    </span>
+</td>
+
+<td style="text-align:center;">
+
+<div class="action-group">
+
+<a href="/approve_delete/{{ req.case }}/{{ req.file }}" class="create-btn">
+    Approve
+</a>
+
+<a href="/reject_delete/{{ req.case }}/{{ req.file }}" class="create-btn2">
+    Reject
+</a>
+
+</div>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- ================= LOGS ================= -->
+<h2>System Logs</h2>
+
+<div class="table-container">
+    <div class="scroll-box logs-scroll">
+
+<table>
+
+<thead>
+<tr>
+<th>User</th>
+<th>Action</th>
+<th>Case</th>
+<th>File</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for log in logs %}
+
+<tr>
+
+<td>
+    <span class="badge badge-low">
+        {{ log[0] }}
+    </span>
+</td>
+
+<td>
+    {% if log[1] == "login" %}
+        <span class="badge badge-low">Login</span>
+    {% elif log[1] == "logout" %}
+        <span class="badge badge-medium">Logout</span>
+    {% elif log[1] == "request_delete" %}
+        <span class="badge badge-high">Delete Request</span>
+    {% elif log[1] == "approve_delete" %}
+        <span class="badge badge-low">Approved</span>
+    {% elif log[1] == "reject_delete" %}
+        <span class="badge badge-medium">Rejected</span>
+    {% else %}
+        <span class="badge">{{ log[1] }}</span>
+    {% endif %}
+</td>
+
+<td>
+    {% if log[2] %}
+        <span class="badge badge-medium">{{ log[2] }}</span>
+    {% endif %}
+</td>
+
+<td style="max-width:220px; word-break:break-word;">
+    {{ log[3] }}
+</td>
+
+<td>{{ log[4] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}
