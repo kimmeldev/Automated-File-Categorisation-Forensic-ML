@@ -20,3 +20,8 @@ python app.py
 
 ## Note
 Sensitive files such as Firebase credentials and datasets are excluded for security purposes.
+
+## System Interface
+
+![Dashboard](images/dashboard.png)
+![Result](images/result.png)
